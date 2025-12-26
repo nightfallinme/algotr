@@ -793,10 +793,12 @@ class VacuumOrchestrator:
             log.info(f"[{symbol}] SL TRIGGER | PnL={pnl_pct*10000:.2f}bps <= Target={sl_bps}bps (Mode={state.entry_mode})")
             exit_reason = "SL"
         
-        # Max hold time - only exit if PnL is positive (let SL handle losers)
+        # Max hold time - only exit if PnL covers round-trip fees (fee-aware)
         elif state.entry_time_ms > 0:
             hold_sec = (now_ms - state.entry_time_ms) / 1000
-            if hold_sec >= max_hold_limit and pnl_pct > 0:
+            # Round-trip taker fee: 2 * taker_fee_bps
+            min_profit_pct = (2 * self._cfg.taker_fee_bps) / 10000
+            if hold_sec >= max_hold_limit and pnl_pct > min_profit_pct:
                 exit_reason = "TIME"
         
         # Structural invalidation: entry wall broken

@@ -1,46 +1,56 @@
 {
   "summary": {
-    "total_pnl_pct": 0.0034,
-    "total_pnl_bps": 0.34,
-    "total_trades": 1,
-    "wins": 1,
-    "losses": 0,
-    "win_rate_pct": 100.0,
-    "avg_pnl_bps": 0.34,
+    "total_pnl_pct": -0.1316,
+    "total_pnl_bps": -13.16,
+    "total_trades": 2,
+    "wins": 0,
+    "losses": 2,
+    "win_rate_pct": 0.0,
+    "avg_pnl_bps": -6.58,
     "tp_count": 0,
-    "sl_count": 0,
+    "sl_count": 1,
     "time_count": 1,
     "tp_pnl_bps": 0,
-    "sl_pnl_bps": 0
+    "sl_pnl_bps": -13.16
   },
   "signals": [
     {
       "symbol": "ETH",
       "side": "BUY",
       "mode": "fade",
-      "price": 2962.6,
-      "lir": 2.2921554585557438,
+      "price": 2963.6,
+      "lir": 1.3712280416250804,
       "vacuum_bps": 0,
-      "timestamp_ms": 1766736881734
+      "timestamp_ms": 1766737702163
     },
     {
       "symbol": "ETH",
       "side": "SELL",
+      "reason": "SL",
+      "entry_price": 2963.6,
+      "exit_price": 2959.7,
+      "pnl_pct": -0.0013159670670806083,
+      "mode": "fade",
+      "timestamp_ms": 1766737879161
+    },
+    {
+      "symbol": "ETH",
+      "side": "SELL",
+      "mode": "fade",
+      "price": 2958.5,
+      "lir": 1.015987735364345,
+      "vacuum_bps": 0,
+      "timestamp_ms": 1766737895253
+    },
+    {
+      "symbol": "ETH",
+      "side": "BUY",
       "reason": "TIME",
-      "entry_price": 2962.6,
-      "exit_price": 2962.7,
-      "pnl_pct": 3.375413488149229e-05,
+      "entry_price": 2958.5,
+      "exit_price": 2958.5,
+      "pnl_pct": 0.0,
       "mode": "fade",
-      "timestamp_ms": 1766737342196
-    },
-    {
-      "symbol": "ETH",
-      "side": "SELL",
-      "mode": "fade",
-      "price": 2963.9,
-      "lir": 1.4024288667257485,
-      "vacuum_bps": 0,
-      "timestamp_ms": 1766737457987
+      "timestamp_ms": 1766738195557
     }
   ],
   "trades": []
