@@ -66,12 +66,44 @@ class VacuumTradeLogger:
         self.save()  # Auto-save
     
     def save(self) -> None:
-        """Save logged data to file."""
+        """Save logged data to file with PnL summary at top."""
         import json
         try:
+            # Calculate PnL summary from closed trades (signals with exit)
+            closed_trades = [s for s in self._signals if "exit_price" in s and "pnl_pct" in s]
+            
+            total_pnl_pct = sum(t.get("pnl_pct", 0) for t in closed_trades)
+            win_count = sum(1 for t in closed_trades if t.get("pnl_pct", 0) > 0)
+            loss_count = sum(1 for t in closed_trades if t.get("pnl_pct", 0) <= 0)
+            total_trades = len(closed_trades)
+            win_rate = (win_count / total_trades * 100) if total_trades > 0 else 0
+            
+            # Calculate by exit reason
+            tp_trades = [t for t in closed_trades if t.get("reason") == "TP"]
+            sl_trades = [t for t in closed_trades if t.get("reason") == "SL"]
+            time_trades = [t for t in closed_trades if t.get("reason") == "TIME"]
+            
+            summary = {
+                "total_pnl_pct": round(total_pnl_pct * 100, 4),  # As percentage
+                "total_pnl_bps": round(total_pnl_pct * 10000, 2),  # As basis points
+                "total_trades": total_trades,
+                "wins": win_count,
+                "losses": loss_count,
+                "win_rate_pct": round(win_rate, 1),
+                "avg_pnl_bps": round(total_pnl_pct / total_trades * 10000, 2) if total_trades > 0 else 0,
+                "tp_count": len(tp_trades),
+                "sl_count": len(sl_trades),
+                "time_count": len(time_trades),
+                "tp_pnl_bps": round(sum(t.get("pnl_pct", 0) for t in tp_trades) * 10000, 2),
+                "sl_pnl_bps": round(sum(t.get("pnl_pct", 0) for t in sl_trades) * 10000, 2),
+            }
+            
             with open(self.output_file, "w") as f:
-                json.dump({"signals": self._signals, "trades": self._trades}, f, indent=2)
-            # log.debug(f"Trade log saved to {self.output_file}")
+                json.dump({
+                    "summary": summary,
+                    "signals": self._signals,
+                    "trades": self._trades
+                }, f, indent=2)
         except Exception as e:
             log.error(f"Failed to save trade log: {e}")
 
@@ -710,20 +742,48 @@ class VacuumOrchestrator:
         
         exit_reason = None
         
-        # Take Profit
+        # Take Profit with trailing extension
         if pnl_pct >= tp_pct:
-            log.info(f"[{symbol}] TP TRIGGER | PnL={pnl_pct*10000:.2f}bps >= Target={tp_bps}bps (Mode={state.entry_mode})")
-            exit_reason = "TP"
+            # Check if signal still favors current direction
+            should_extend = False
+            max_extensions = 3  # Max number of TP extensions
+            
+            if state.tp_trail_count < max_extensions:
+                # Check cooldown
+                if now_ms - state.last_tp_extend_ms > state.tp_extension_cooldown_ms:
+                    # Check if LIR still favors our direction
+                    lir = state.last_lir
+                    if lir and lir.is_ready:
+                        if state.position_side == "long" and lir.lir_smooth > 1.2:
+                            should_extend = True
+                        elif state.position_side == "short" and lir.lir_smooth < 0.8:
+                            should_extend = True
+            
+            if should_extend:
+                # Extend TP by moving entry price up (virtual trail)
+                state.tp_trail_count += 1
+                state.last_tp_extend_ms = now_ms
+                # Effectively move our "entry" to lock in profits
+                old_entry = state.avg_entry
+                trail_pct = tp_pct * 0.5  # Lock in 50% of TP as new floor
+                if state.position_side == "long":
+                    state.avg_entry = old_entry * (1 + trail_pct)
+                else:
+                    state.avg_entry = old_entry * (1 - trail_pct)
+                log.info(f"[{symbol}] TP EXTEND #{state.tp_trail_count} | LIR={lir.lir_smooth:.2f} | Entry trail {old_entry:.2f} → {state.avg_entry:.2f}")
+            else:
+                log.info(f"[{symbol}] TP TRIGGER | PnL={pnl_pct*10000:.2f}bps >= Target={tp_bps}bps (Mode={state.entry_mode}, Extensions={state.tp_trail_count})")
+                exit_reason = "TP"
         
         # Stop Loss
         elif pnl_pct <= -sl_pct:
             log.info(f"[{symbol}] SL TRIGGER | PnL={pnl_pct*10000:.2f}bps <= Target={sl_bps}bps (Mode={state.entry_mode})")
             exit_reason = "SL"
         
-        # Max hold time
+        # Max hold time - only exit if PnL is positive (let SL handle losers)
         elif state.entry_time_ms > 0:
             hold_sec = (now_ms - state.entry_time_ms) / 1000
-            if hold_sec >= max_hold_limit:
+            if hold_sec >= max_hold_limit and pnl_pct > 0:
                 exit_reason = "TIME"
         
         # Structural invalidation: entry wall broken

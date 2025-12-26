@@ -160,6 +160,282 @@
       "lir": 2.0662664241965123,
       "vacuum_bps": 0,
       "timestamp_ms": 1766734872561
+    },
+    {
+      "symbol": "ETH",
+      "side": "SELL",
+      "reason": "TIME",
+      "entry_price": 2968.3,
+      "exit_price": 2965.6,
+      "pnl_pct": -0.0009096115621737266,
+      "mode": "fade",
+      "timestamp_ms": 1766735172941
+    },
+    {
+      "symbol": "ETH",
+      "side": "SELL",
+      "mode": "fade",
+      "price": 2963.5,
+      "lir": 0.8486240788276387,
+      "vacuum_bps": 0,
+      "timestamp_ms": 1766735180888
+    },
+    {
+      "symbol": "ETH",
+      "side": "BUY",
+      "reason": "TP",
+      "entry_price": 2963.5,
+      "exit_price": 2961.7,
+      "pnl_pct": 0.000607389910578769,
+      "mode": "fade",
+      "timestamp_ms": 1766735342640
+    },
+    {
+      "symbol": "ETH",
+      "side": "BUY",
+      "mode": "fade",
+      "price": 2961.1,
+      "lir": 0.8041837352750638,
+      "vacuum_bps": 0,
+      "timestamp_ms": 1766735343126
+    },
+    {
+      "symbol": "ETH",
+      "side": "SELL",
+      "reason": "SL",
+      "entry_price": 2961.1,
+      "exit_price": 2957.0,
+      "pnl_pct": -0.0013846205801897637,
+      "mode": "fade",
+      "timestamp_ms": 1766735420765
+    },
+    {
+      "symbol": "ETH",
+      "side": "BUY",
+      "mode": "fade",
+      "price": 2957.1,
+      "lir": 1.5038278074087847,
+      "vacuum_bps": 0,
+      "timestamp_ms": 1766735422555
+    },
+    {
+      "symbol": "ETH",
+      "side": "SELL",
+      "reason": "TP",
+      "entry_price": 2957.1,
+      "exit_price": 2959.0,
+      "pnl_pct": 0.0006425213891989081,
+      "mode": "fade",
+      "timestamp_ms": 1766735481550
+    },
+    {
+      "symbol": "ETH",
+      "side": "BUY",
+      "mode": "fade",
+      "price": 2959.1,
+      "lir": 2.0193386241970073,
+      "vacuum_bps": 0,
+      "timestamp_ms": 1766735482036
+    },
+    {
+      "symbol": "ETH",
+      "side": "SELL",
+      "reason": "TIME",
+      "entry_price": 2959.1,
+      "exit_price": 2957.1,
+      "pnl_pct": -0.0006758811800885405,
+      "mode": "fade",
+      "timestamp_ms": 1766735782041
+    },
+    {
+      "symbol": "ETH",
+      "side": "SELL",
+      "mode": "fade",
+      "price": 2953.7,
+      "lir": 0.8675359756187919,
+      "vacuum_bps": 0,
+      "timestamp_ms": 1766735820506
+    },
+    {
+      "symbol": "ETH",
+      "side": "BUY",
+      "reason": "SL",
+      "entry_price": 2953.7,
+      "exit_price": 2957.7,
+      "pnl_pct": -0.0013542336730202797,
+      "mode": "fade",
+      "timestamp_ms": 1766736028482
+    },
+    {
+      "symbol": "ETH",
+      "side": "SELL",
+      "mode": "fade",
+      "price": 2957.2,
+      "lir": 0.8829548744983553,
+      "vacuum_bps": 0,
+      "timestamp_ms": 1766736030638
+    },
+    {
+      "symbol": "ETH",
+      "side": "BUY",
+      "reason": "SL",
+      "entry_price": 2957.2,
+      "exit_price": 2961.3,
+      "pnl_pct": -0.0013864466387124186,
+      "mode": "fade",
+      "timestamp_ms": 1766736073855
+    },
+    {
+      "symbol": "ETH",
+      "side": "BUY",
+      "mode": "fade",
+      "price": 2960.5,
+      "lir": 0.9072382568611888,
+      "vacuum_bps": 0,
+      "timestamp_ms": 1766736078496
+    },
+    {
+      "symbol": "ETH",
+      "side": "SELL",
+      "reason": "TP",
+      "entry_price": 2960.5,
+      "exit_price": 2962.3,
+      "pnl_pct": 0.0006080054044925458,
+      "mode": "fade",
+      "timestamp_ms": 1766736099985
+    },
+    {
+      "symbol": "ETH",
+      "side": "BUY",
+      "mode": "fade",
+      "price": 2961.5,
+      "lir": 1.5771308317318897,
+      "vacuum_bps": 0,
+      "timestamp_ms": 1766736100379
+    },
+    {
+      "symbol": "ETH",
+      "side": "SELL",
+      "reason": "TP",
+      "entry_price": 2961.5,
+      "exit_price": 2963.2,
+      "pnl_pct": 0.0005740334290055101,
+      "mode": "fade",
+      "timestamp_ms": 1766736201412
+    },
+    {
+      "symbol": "ETH",
+      "side": "BUY",
+      "mode": "fade",
+      "price": 2964.1,
+      "lir": 1.6714598536807759,
+      "vacuum_bps": 0,
+      "timestamp_ms": 1766736202266
+    },
+    {
+      "symbol": "ETH",
+      "side": "SELL",
+      "reason": "TP",
+      "entry_price": 2964.1,
+      "exit_price": 2965.7,
+      "pnl_pct": 0.000539792854492058,
+      "mode": "fade",
+      "timestamp_ms": 1766736225780
+    },
+    {
+      "symbol": "ETH",
+      "side": "BUY",
+      "mode": "fade",
+      "price": 2965.9,
+      "lir": 1.8117423670368369,
+      "vacuum_bps": 0,
+      "timestamp_ms": 1766736226332
+    },
+    {
+      "symbol": "ETH",
+      "side": "SELL",
+      "reason": "TP",
+      "entry_price": 2965.9,
+      "exit_price": 2967.9,
+      "pnl_pct": 0.0006743315688323948,
+      "mode": "fade",
+      "timestamp_ms": 1766736244968
+    },
+    {
+      "symbol": "ETH",
+      "side": "BUY",
+      "mode": "fade",
+      "price": 2968.0,
+      "lir": 1.3997728281546133,
+      "vacuum_bps": 0,
+      "timestamp_ms": 1766736245166
+    },
+    {
+      "symbol": "ETH",
+      "side": "SELL",
+      "reason": "TP",
+      "entry_price": 2968.0,
+      "exit_price": 2969.7,
+      "pnl_pct": 0.0005727762803233888,
+      "mode": "fade",
+      "timestamp_ms": 1766736249722
+    },
+    {
+      "symbol": "ETH",
+      "side": "BUY",
+      "mode": "fade",
+      "price": 2970.2,
+      "lir": 2.667450552034715,
+      "vacuum_bps": 0,
+      "timestamp_ms": 1766736250140
+    },
+    {
+      "symbol": "ETH",
+      "side": "SELL",
+      "reason": "SL",
+      "entry_price": 2970.2,
+      "exit_price": 2966.1,
+      "pnl_pct": -0.001380378425695209,
+      "mode": "fade",
+      "timestamp_ms": 1766736280114
+    },
+    {
+      "symbol": "ETH",
+      "side": "BUY",
+      "mode": "fade",
+      "price": 2965.0,
+      "lir": 0.7932678029402632,
+      "vacuum_bps": 0,
+      "timestamp_ms": 1766736282597
+    },
+    {
+      "symbol": "ETH",
+      "side": "SELL",
+      "reason": "SL",
+      "entry_price": 2965.0,
+      "exit_price": 2960.3,
+      "pnl_pct": -0.0015851602023608156,
+      "mode": "fade",
+      "timestamp_ms": 1766736296643
+    },
+    {
+      "symbol": "ETH",
+      "side": "SELL",
+      "mode": "fade",
+      "price": 2960.3,
+      "lir": 0.6607555665605979,
+      "vacuum_bps": 0,
+      "timestamp_ms": 1766736297085
+    },
+    {
+      "symbol": "ETH",
+      "side": "BUY",
+      "reason": "TIME",
+      "entry_price": 2960.3,
+      "exit_price": 2960.4,
+      "pnl_pct": -3.378036009860793e-05,
+      "mode": "fade",
+      "timestamp_ms": 1766736597930
     }
   ],
   "trades": []

@@ -89,6 +89,9 @@ class VacuumCoinState:
     entry_time_ms: int = 0
     entry_mode: str = ""  # "break" | "fade"
     entry_wall_price: float = 0.0  # For structural invalidation checks
+    tp_trail_count: int = 0  # Number of times TP was extended
+    last_tp_extend_ms: int = 0  # Last TP extension timestamp
+    tp_extension_cooldown_ms: int = 5000  # Min time between extensions
     
     # === Execution Locks ===
     entry_inflight: bool = False
@@ -290,6 +293,8 @@ class VacuumCoinState:
         self.entry_time_ms = 0
         self.entry_mode = ""
         self.entry_wall_price = 0.0
+        self.tp_trail_count = 0
+        self.last_tp_extend_ms = 0
     
     def get_micro_atr(self) -> float:
         """Get current micro ATR value."""
