@@ -44,6 +44,19 @@ class VacuumSignal:
             return float('inf')
         return self.thin_liquidity / self.median_depth
     
+    @property
+    def quality_score(self) -> float:
+        """
+        Combined quality score: higher = better vacuum opportunity.
+        Combines vacuum width (bps) with thinness ratio.
+        """
+        if self.median_depth <= 0 or not self.is_valid:
+            return 0.0
+        # Thinness: 1.0 = no liquidity, 0.0 = median liquidity
+        thinness = max(0.0, 1.0 - (self.thin_liquidity / self.median_depth))
+        # Score = vacuum width * thinness factor
+        return self.vacuum_bps * thinness
+    
     def to_dict(self) -> dict:
         return {
             "side": self.side,
@@ -52,6 +65,7 @@ class VacuumSignal:
             "wall_size": round(self.wall_size, 4),
             "thin_liquidity": round(self.thin_liquidity, 4),
             "quality": round(self.vacuum_quality, 2),
+            "quality_score": round(self.quality_score, 2),
             "valid": self.is_valid,
         }
 

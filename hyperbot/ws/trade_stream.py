@@ -216,6 +216,24 @@ class TradeStreamManager:
             return 0.5  # Neutral if no volume
         return buy / total
     
+    def get_aggressor_bias(self, now_ms: Optional[int] = None) -> float:
+        """
+        Get aggressor bias for trade flow.
+        
+        Returns:
+            -1 to +1 scale:
+            > 0 = bullish (more buy aggression)
+            < 0 = bearish (more sell aggression)
+            0 = neutral
+        """
+        now = now_ms or int(time.time() * 1000)
+        buy = self.buy_volume.sum(now)
+        sell = self.sell_volume.sum(now)
+        total = buy + sell
+        if total < 1e-9:
+            return 0.0
+        return (buy - sell) / total
+    
     def get_trade_count(self, now_ms: Optional[int] = None) -> int:
         """Get number of trades in window."""
         now = now_ms or int(time.time() * 1000)

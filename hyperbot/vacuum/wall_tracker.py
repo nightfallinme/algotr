@@ -32,6 +32,11 @@ class WallTouch:
     touch_count: int = 1  # How many ticks we've been touching
     rejection_ticks: int = 0  # Consecutive ticks price moved away
     max_rejection_distance_bps: float = 0.0  # Furthest we've been from wall during rejection
+    size_history: list = None  # Last N wall sizes for erosion tracking
+    
+    def __post_init__(self):
+        if self.size_history is None:
+            self.size_history = [self.initial_wall_size]
     
     @property
     def wall_stable(self) -> bool:
@@ -43,6 +48,27 @@ class WallTouch:
         """True if wall size is decreasing (being absorbed)."""
         return self.current_wall_size < self.initial_wall_size * 0.7
     
+    @property
+    def erosion_rate(self) -> float:
+        """
+        Erosion rate over history window.
+        Negative = shrinking (being absorbed)
+        Positive = growing (getting stronger)
+        """
+        if len(self.size_history) < 2:
+            return 0.0
+        first_size = self.size_history[0]
+        if first_size <= 0:
+            return 0.0
+        return (self.current_wall_size - first_size) / first_size
+    
+    def update_size_history(self, new_size: float, max_history: int = 10) -> None:
+        """Add new size to history, maintaining max length."""
+        self.size_history.append(new_size)
+        if len(self.size_history) > max_history:
+            self.size_history.pop(0)
+        self.current_wall_size = new_size
+    
     def to_dict(self) -> dict:
         return {
             "wall_price": self.wall_price,
@@ -51,6 +77,7 @@ class WallTouch:
             "rejection_ticks": self.rejection_ticks,
             "wall_stable": self.wall_stable,
             "wall_eroding": self.wall_eroding,
+            "erosion_rate": round(self.erosion_rate, 3),
             "rejection_bps": round(self.max_rejection_distance_bps, 2),
         }
 
@@ -179,9 +206,9 @@ class WallTracker:
                     touch_time_ms=now_ms,
                 )
             else:
-                # Continue touch
+                # Continue touch - update with history tracking
                 current_touch.touch_count += 1
-                current_touch.current_wall_size = wall.size
+                current_touch.update_size_history(wall.size)
                 current_touch.rejection_ticks = 0  # Reset rejection on re-touch
                 return current_touch
         
@@ -210,8 +237,8 @@ class WallTracker:
                 rejection_bps
             )
         
-        # Update wall size if wall still exists
-        current_touch.current_wall_size = wall.size
+        # Update wall size history if wall still exists
+        current_touch.update_size_history(wall.size)
         
         return current_touch
     

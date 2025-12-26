@@ -657,6 +657,19 @@ class VacuumOrchestrator:
                 mode_enum = EntryMode.FADE
             elif signal.strategy_name in BREAK_STRATEGIES:
                 mode_enum = EntryMode.BREAK
+                
+                # BREAK requires aggressor confirmation
+                aggressor_bias = state.trades.get_aggressor_bias(now_ms)
+                aggressor_threshold = 0.2  # Configurable via _cfg if needed
+                
+                if signal.side.upper() == "BUY" and aggressor_bias < aggressor_threshold:
+                    log.debug(f"[{symbol}] BREAK rejected: aggressor_bias={aggressor_bias:.2f} < {aggressor_threshold}")
+                    return
+                if signal.side.upper() == "SELL" and aggressor_bias > -aggressor_threshold:
+                    log.debug(f"[{symbol}] BREAK rejected: aggressor_bias={aggressor_bias:.2f} > {-aggressor_threshold}")
+                    return
+                    
+                log.info(f"[{symbol}] BREAK confirmed: aggressor_bias={aggressor_bias:.2f}")
             else:
                 # Default to FADE (safer, tighter targets)
                 mode_enum = EntryMode.FADE
