@@ -1,0 +1,71 @@
+# ============================================
+# HyperBot Test Configuration
+# ============================================
+# Uses test_strategy indicator for random signals
+
+# Data Source (Binance via CCXT)
+data:
+  exchange: binance
+  symbol: ETH/USDT
+  timeframes:
+    macro: 5m
+    micro: 1m
+  lookback_bars: 50
+  tick_interval: 5  # Faster ticks for testing
+
+# Execution (Mock)
+execution:
+  exchange: mock
+  symbol: ETH
+  leverage: 5
+  order_type: market
+  initial_balance: 10000.0
+
+# Indicators (test mode)
+indicators:
+  # Disable research_strategy for testing
+  research_strategy:
+    enabled: false
+    weight: 0.0
+    is_mandatory: false
+    
+  # Enable test indicator
+  test_strategy:
+    enabled: true
+    weight: 1.0
+    is_mandatory: true
+    signal_probability: 0.4   # 40% chance of signal each tick
+    signal_duration: 2        # Signal lasts 2 ticks
+
+# Risk Settings (aggressive for testing)
+risk:
+  max_risk_per_trade_pct: 2.0
+  sl_atr_multiplier: 0.5    # Tighter SL for faster triggers
+  sl_use_structure: false
+  tp_rr_partial: 0.5        # Quick partial TP
+  tp_rr_full: 1.0           # Quick full TP
+  partial_exit_pct: 50
+  max_bars_in_trade: 5       # Short time exit for testing
+  min_seconds_between_trades: 10  # Allow rapid testing
+
+# Entry Filters (relaxed for testing)
+entry_filters:
+  min_confidence: 0.5
+  momentum_alignment_enabled: false
+  min_slope_enabled: false
+
+# State Machine
+regime:
+  idle_bars: 2
+  firing_cooldown: 5
+
+# Protection (disabled for testing)
+protection:
+  max_daily_loss_pct: 50.0
+  loss_streak_threshold: 10
+  size_reduction_factor: 1.0
+
+# Logging
+logging:
+  level: DEBUG
+  format: "[%(levelname)s] %(name)s: %(message)s"

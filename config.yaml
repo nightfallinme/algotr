@@ -1,0 +1,157 @@
+# ============================================
+# HyperBot: Always-On Trend Scalper Config
+# ============================================
+# OPTIMIZED MODE - Balanced filters for quality trades
+
+# Data Source (Binance via CCXT)
+data:
+  exchange: binance
+  symbol: ETH/USDT
+  tick_interval: 1       # 1s polling (Aggressive)
+  timeframes:
+    macro: 5m    # Regime detection
+    micro: 1m    # Setup detection
+  lookback_bars: 200
+
+# Execution (Hyperliquid)
+execution:
+  exchange: mock
+  symbol: ETH
+  leverage: 5
+  order_type: market
+  order_type: market
+  slippage_pct: 0.05
+
+# Smart DCA / Pyramiding Strategy
+dca:
+  enabled: true
+  mode: hybrid        # Test Hybrid Logic
+  max_adds: 3         # Allow 3 adds
+  size_multiplier: 1.5 # Martingale-ish
+  
+  # Smart Filters (Very Loose for testing)
+  min_distance_atr: 0.5 
+  min_confidence: 0.5
+  min_pnl_pct: -0.1    # Allow averaging down quickly
+  max_drawdown_pct: -2.0  # DCA: Don't add if loss exceeds this % (Stop catching falling knife)
+
+# Indicators (auto-discovered)
+indicators:
+  # === STRESS TEST (FOR MOCK TESTING - DISABLED IN PRODUCTION) ===
+  stress_test:
+    enabled: false        # DISABLE for production
+    weight: 10.0
+    is_mandatory: false
+    scenario_duration: 30  # Seconds per scenario phase
+    
+  # === RESEARCH STRATEGY (PRODUCTION STRATEGY) ===
+  research_strategy:
+    enabled: true          # ENABLE for production
+    weight: 1.0
+    is_mandatory: true     # Must pass to trade
+    stoch_k_period: 14
+    stoch_d_period: 3
+    roc_period: 10
+    volume_ma_period: 20
+    direction_lookback: 3
+    volume_ratio_min_change: 0.05
+    stoch_min_change: 2.0
+    roc_min_change: 0.1
+
+# Regime Filter (Market Safety Check)
+regime_filter:
+  enabled: true
+  timeframe: 5m
+  ema_fast: 8
+  ema_slow: 21
+  slope_threshold: 0.000005   # Lower threshold (5e-06) - less sensitive
+  volatility:
+    atr_period: 7
+    atr_ma_period: 10
+    bb_period: 10
+    bb_std: 1.5
+
+# === ENTRY FILTERS ===
+# NOTE: Most filters DISABLED - research_strategy handles its own signal quality
+entry_filters:
+  # Minimum confidence (research_strategy returns 0.6+ when conditions met)
+  min_confidence: 0.5
+  
+  # Signal aggregation thresholds
+  direction_threshold: 0.3     # Min weighted avg for LONG/SHORT (below = NEUTRAL)
+  mandatory_min_strength: 0.5  # Min strength for mandatory indicators
+
+# Risk Management - OPTIMIZED FOR 10-MINUTE SCALPING
+risk:
+  max_risk_per_trade_pct: 1.5
+  min_position_size_usd: 12.0   # Minimum trade size (prevents exchange rejection)
+  
+  # Stop Loss - Tight for scalping
+  sl_atr_multiplier: 1.0        # Tighter SL for 10m window
+  min_sl_atr_mult: 0.1          # Min SL distance (0.1 * ATR)
+  max_sl_atr_mult: 1.0          # Max SL distance (1.0 * ATR)
+  sl_use_structure: true
+  
+  # Take Profit - Optimized for 10m window
+  tp_rr_partial: 0.5            # Quick partial at 0.5R
+  tp_rr_full: 1.0               # Full TP at 1R (achievable in 10m)
+  partial_exit_pct: 50
+  
+  # Time-based exit - 10 MINUTE WINDOW
+  max_bars_in_trade: 10         # 10 bars on 1m = 10 minutes exactly
+  
+  # Anti-relentless
+  min_seconds_between_trades: 60  # 1 min cooldown between trades
+
+# Anti-Overtrade Protection
+protection:
+  loss_streak_threshold: 5
+  size_reduction_factor: 0.8
+  freq_reduction_factor: 0.9
+  cooldown_trades: 2
+
+# Logging
+logging:
+  level: INFO         # INFO for production, DEBUG for verbose
+  file: hyperbot.log
+  console: true
+  format: "%(asctime)s | %(levelname)-8s | %(name)s | %(message)s"
+  
+  # ═══════════════════════════════════════════════════════════════════════════
+  # CATEGORY LEGEND (All available log categories)
+  # ═══════════════════════════════════════════════════════════════════════════
+  # 
+  # CORE TRADING:
+  #   signal   📶 - Indicator signals and aggregation (entry decisions)
+  #   risk     ⚠️  - Risk engine decisions (SL/TP, sizing, position limits)
+  #   exec     💰 - Execution events (orders, fills, position changes)
+  #   state    🔄 - State machine transitions (IDLE→ARMED→FIRING)
+  #   dca      📈 - DCA/Pyramiding decisions (add to position logic)
+  #   exit     🚪 - Exit condition checks (SL/TP/time/strategy)
+  #
+  # DATA & MARKET:
+  #   tick     ⏱️  - Per-tick data fetch (VERY VERBOSE - only for debugging)
+  #   price    💱 - Price sync & basis protection events
+  #   regime   🌡️  - Regime filter events (trend/volatility analysis)
+  #
+  # SYSTEM:
+  #   init     🚀 - Startup/initialization logs
+  #   trade    📝 - Trade lifecycle (entry/exit snapshots from analytics)
+  #   stress   🧪 - Stress test scenario logs
+  #   status   📊 - Periodic status updates (main tick display)
+  #
+  # ═══════════════════════════════════════════════════════════════════════════
+  # USAGE:
+  #   []         = Disable ALL categorical logs (minimal output)
+  #   [status]   = Show only periodic status (recommended for production)
+  #   [status, exec, trade] = Balanced view (recommended for monitoring)
+  #   [signal, risk, exec, state, dca, exit, status, trade] = Full trading view
+  #   [tick, price] = Debug data/price issues (very verbose)
+  # ═══════════════════════════════════════════════════════════════════════════
+  
+  # RECOMMENDED PRESET: Shows trading activity without noise
+  debug_categories:
+    - status    # Main status line (price, regime, state)
+    - exec      # Order executions (entries, exits)
+    - trade     # Trade lifecycle snapshots
+    - init      # Startup messages

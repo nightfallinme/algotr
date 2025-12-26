@@ -1,0 +1,20 @@
+# requirements.txt
+# HyperBot Dependencies
+
+# Core
+ccxt>=4.0.0           # Binance data fetching
+pandas>=2.0.0         # Data manipulation
+numpy>=1.24.0         # Numerical operations
+pyyaml>=6.0           # Configuration
+
+# Hyperliquid
+hyperliquid-python-sdk==0.21.0  # Hyperliquid trading
+eth-account>=0.10.0   # Ethereum account for Hyperliquid
+
+# Bybit
+pybit>=5.0.0          # Bybit trading
+websockets>=12.0      # WebSocket connections
+
+# Testing
+pytest>=7.0.0         # Testing framework
+pytest-cov>=4.0.0     # Coverage reporting

@@ -1,0 +1,224 @@
+# ============================================
+# HyperBot OFI Scalper Config
+# ============================================
+# Real-time WebSocket-driven OFI scalping configuration
+# Mode: shadow (log only), paper (small size), live (full)
+
+# ============ EXCHANGE SELECTION ============
+# Switch between exchanges without code changes
+exchange:
+  type: bybit           # hyperliquid | bybit
+  testnet: false        # Use testnet API endpoints
+  
+  # Hyperliquid credentials (from env: HL_SECRET_KEY, HL_ACCOUNT_ADDRESS)
+  # Bybit credentials (from env: BYBIT_API_KEY, BYBIT_API_SECRET)
+
+
+# Execution Mode
+ofi:
+  mode: shadow  # shadow | paper | live
+  # Fee Structure (Bybit VIP0)
+  # Maker: 0.02% (2.0 bps)
+  # Taker: 0.055% (5.5 bps)
+  maker_fee_bps: 2.0
+  taker_fee_bps: 5.5
+  
+  # OFI Signal Parameters
+  ofi_long_threshold: 0.20     # OFI > this = long signal
+  ofi_short_threshold: -0.20   # OFI < this = short signal
+  ofi_window_sec: 2.0          # Rolling window for OFI calculation
+  ofi_book_weight: 0.5         # Weight for book-based OFI
+  ofi_trade_weight: 0.5        # Weight for trade-based OFI
+  ofi_flip_debounce: 3         # Consecutive opposite OFI ticks before flip exit
+  
+  # ============ FILTER TOGGLES ============
+  # Set to false to disable any filter
+  filters:
+    stoprun_enabled: true          # Stop-run detection and cooldown
+    confirmation_enabled: true     # Multi-tick signal persistence (Layer 1A)
+    integral_enabled: true         # OFI area accumulation (Layer 1B)
+    trade_imbalance_enabled: true  # Trade flow verification (Layer 2A)
+    drift_enabled: true            # Microprice drift check (Layer 2B)
+    edge_enabled: true             # Expected move vs cost (Layer 3)
+    vol_filter_enabled: true       # Block high volatility entries
+    spread_filter_enabled: true    # Block wide spread entries
+  
+  # OFI Confirmation & Integral
+  entry_confirm_ticks: 3       # Check last N ticks (was 5)
+  entry_confirm_min_hits: 2    # At least M hits > threshold (was 3)
+  ofi_area_window_sec: 3.0     # Window for OFI integral (was 3.0)
+  ofi_area_long: 0.40          # Integral > this = confirm long (was 0.45)
+  ofi_area_short: -0.40        # Integral < this = confirm short (was -0.45)
+  confirm_integral_mode: "OR"  # "AND" or "OR" - how Confirm+Integral gates work
+  
+  # Adaptive threshold (multiply base by clamped volZ)
+  ofi_adaptive_threshold: true # Enable adaptive thresholds
+  ofi_vol_clamp_min: 0.8       # Min volZ multiplier
+  ofi_vol_clamp_max: 1.3       # Max volZ multiplier
+  min_ofi_abs: 0.20            # Minimum |OFI| even with adaptive (no weak signals)
+  stoprun_cooldown_sec: 3.0    # Cooldown after extreme OFI + vol spike (stop-run protection)
+  extreme_ofi_mult: 2.0        # Extreme OFI = threshold * this (triggers stop-run guard)
+  
+  # Microprice Drift Filter (Tick-based)
+  drift_ticks_lookback: 3      # Check drift over last N ticks
+  drift_bypass_ofi_abs: 0.24   # Bypass drift check if |OFI| >= this (was 0.30)
+  micro_drift_spread_mult: 0.15 # Required drift > spread * this
+  
+  # Trade Imbalance Confirmation
+  trade_imbalance_threshold: 0.55  # Required buy ratio (long) or sell ratio (short)
+  trade_imbalance_min_trades: 15   # Skip imbalance check if fewer trades in window (noise)
+  
+  # Exit gating (prevents fee-locking exits)
+  exit_require_net_nonnegative_for_flip: true       # ofi_flip exit only if net >= 0
+  exit_require_net_nonnegative_for_vol_spike: true  # vol_spike exit only if net >= 0
+  exit_require_net_nonnegative_for_spread_spike: true # spread_spike exit only if net >= 0
+  est_slippage_bps: 0.7        # Slippage estimate (was 1.0, reduced for low-range)
+  
+  # Volatility Filter (with hysteresis)
+  vol_window_ticks: 50         # Ticks for microATR calculation
+  volz_cutoff: 1.5             # Block entry if volZ > this
+  volz_unblock: 1.3            # Unblock entry if volZ < this (hysteresis)
+  volz_exit_cutoff: 1.8        # vol_spike exit only if volZ > this
+  vol_spike_min_hold_sec: 3.0  # Do not vol-exit within first N seconds
+  
+  # Spread Filter (with hysteresis)
+  spreadz_cutoff: 2.0          # Block entry if spreadZ > this
+  spreadz_unblock: 1.7         # Unblock entry if spreadZ < this (hysteresis)
+  spreadz_exit_cutoff: 8.0     # EXIT if spreadZ > this (higher tolerance than entry)
+  spread_window_ticks: 200     # Ticks for avg spread calculation
+  hard_spread_stop_pct: 0.0010 # 0.10% spread = emergency exit (ignores gating)
+  
+  # IOC Slippage Guard
+  max_slip_spread_mult: 1.5    # max_slip >= spread * this
+  max_slip_atr_mult: 0.25      # max_slip >= microATR * this
+  
+  # Edge Gate (Expected Move vs Cost)
+  edge_buffer_bps: 0.8         # Minimum extra edge required
+  edge_atr_mult: 380.0          # Multiplier for microATR to estimate expected move (increased for Taker fees)
+  
+  # Risk Parameters
+  tp_pct: 0.0036               # Take profit: 0.16% (adjusted for 11bps Bybit Taker Fees)
+  sl_pct: 0.0034               # Stop loss: 0.24%
+  max_hold_sec: 300.0           # Maximum holding time (reduced from 90)
+  
+  # Execution
+  cooldown_ms: 200             # Cooldown after fill (ms)
+  ack_timeout_ms: 2000         # Order ACK timeout (ms)
+  
+  # Sizing
+  position_size_usd: 100.0     # Position size in USD
+  
+  # Warm-up (faster for 2Hz Hyperliquid)
+  warm_up_ticks: 50            # Ticks before book is ready (reduced from 50)
+  warm_up_seconds: 3.0         # Seconds before book is ready
+  min_trades_ready: 1          # Reduced - book OFI works without trade data
+  
+  # Volume
+  volume_unit: base            # base | quote
+
+# Data Source
+data:
+  exchange: hyperliquid
+  symbols:
+    - ETH
+  ws_url: wss://api.hyperliquid.xyz/ws
+
+# Execution (Hyperliquid)
+execution:
+  exchange: hyperliquid
+  leverage: 5
+  slippage_pct: 0.05
+
+# Kill-Switch
+kill_switch:
+  cooldown_sec: 30.0           # Cooldown after trigger
+  reconcile_interval_sec: 5.0  # REST position reconcile interval
+  mismatch_tolerance_lots: 0.001  # Tolerance for reconcile mismatch
+
+# Logging
+logging:
+  level: INFO
+  file: hyperbot_ofi.log
+  console: true
+  debug_categories:
+    - status
+    - exec
+    - ofi
+
+# Cross-Venue Context (Binance)
+binance:
+  enabled: false                  # Enable Binance context feed
+  veto_enabled: true             # Block if sign(OFI_Bin) != sign(OFI_Hyp)
+  veto_min_ofi: 0.10             # Min |OFI_Bin| to trigger veto (ignore noise)
+
+# ============================================
+# MAKER REVERSION MODE (Low-Range Markets)
+# ============================================
+# This mode FADES OFI spikes instead of chasing them.
+# Activates automatically when market is quiet/range-bound.
+maker_mode:
+  enabled: false
+  
+  # Regime Detection (Legacy thresholds)
+  regime:
+    volz_max: 0.9              # Activate only when volZ < this
+    micro_atr_bps_max: 6.0     # Activate only when ATR < this bps
+    spreadz_max: 1.2           # Activate only when spreadZ < this
+  
+  # Advanced Regime Detection (Hysteresis + Voting + Hold Time)
+  # Prevents rapid flip-flops between RANGE and MOMENTUM
+  regime_detection:
+    # Hysteresis thresholds (RANGE->MOMENTUM is harder than MOMENTUM->RANGE)
+    to_momentum_volz: 1.70     # volZ must exceed this to switch to MOMENTUM
+    to_range_volz: 1.10        # volZ must drop below this to switch to RANGE
+    
+    # Dual condition: ATR confirmation for MOMENTUM
+    to_momentum_atr_bps: 1.0   # microATR must exceed this for MOMENTUM
+    
+    # Spread thresholds
+    to_momentum_spreadz: 2.5   # spreadZ for MOMENTUM
+    to_range_spreadz: 1.5      # spreadZ for RANGE
+    
+    # Hold time (prevent rapid switching)
+    min_hold_sec: 30.0         # Minimum seconds in a regime before switching
+    
+    # Voting (debounce via N-of-M)
+    vote_window: 10            # Number of recent samples
+    vote_needed: 7             # Votes needed to confirm change
+    
+    # Gray zone (between thresholds)
+    gray_zone_enabled: true
+    ofi_spike_abs_gray: 0.45   # Higher spike threshold in gray zone
+  
+  # OFI Spike Detection (FADE triggers)
+  ofi_spike_abs: 0.35          # |OFI| > this = spike (HIGHER than taker!)
+  ofi_spike_confirm_ticks: 1   # Just 1 tick (no persistence needed)
+  
+  # Binance Veto (INVERTED for fade strategy)
+  # Block fade if Binance CONFIRMS Hyper direction (real impulse)
+  binance_confirm_blocks: true
+  binance_min_ofi: 0.15
+  
+  # Entry (Maker Limit Placement)
+  entry_offset_bps: 0.5        # How far from BBO (0.5 = tight)
+  
+  # Order Management
+  order_timeout_sec: 3.0       # Cancel if not filled
+  cooldown_after_cancel_ms: 500
+  max_replace_count: 1         # Max times to re-place order
+  
+  # Exit Targets (tuned for better risk/reward)
+  tp_mid_offset_bps: 10.0      # Minimum TP (increased from 3.0)
+  tp_max_bps: 14.0             # Maximum TP
+  sl_bps: 12.0                 # Stop loss (increased from 4.0)
+  max_hold_sec: 1800.0          # Max hold time (3 minutes)
+  
+  # Prefer Maker Exit
+  prefer_maker_exit: true
+  maker_exit_timeout_sec: 30.0   # Switch to taker if not filled
+  
+  # Safety Limits
+  max_position_usd: 100.0      # Max position size
+  max_daily_trades: 500        # Circuit breaker
+  max_daily_loss_bps: 50.0     # Daily loss limit
+

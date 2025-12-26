@@ -1,0 +1,181 @@
+# ============================================
+# HyperBot Vacuum Scalper Config (Clean v2.2)
+# ============================================
+# Liquidity Vacuum + Micro Break & Reclaim strategy
+# Mode: shadow (log only), paper (small size), live (full)
+
+# ============ EXECUTION MODE ============
+vacuum:
+  mode: shadow  # shadow | paper | live
+  
+  # Fee Structure (Hyperliquid Tier 0)
+  maker_fee_bps: 1.5
+  taker_fee_bps: 4.5
+  
+  # ============ LIQUIDITY WALL DETECTION ============
+  # Wall: aggregated size >= median * this
+  wall_min_size_mult: 3.0
+  # Only detect walls within this distance from mid
+  wall_max_distance_bps: 20.0
+  # Ticks wall must persist to be considered stable
+  wall_stability_ticks: 1
+  # Number of L2 levels to analyze
+  depth_levels: 20
+  
+  # ============ VACUUM DETECTION ============
+  # Minimum vacuum size to consider valid
+  min_vacuum_bps: 1.5
+  # Vacuum zone liquidity < median * this
+  vacuum_thin_mult: 0.3
+  # Reject vacuums larger than this (too risky)
+  max_vacuum_bps: 15.0
+  
+  # ============ LIR (Liquidity Imbalance Ratio) ============
+  # Depth range for LIR calculation
+  lir_depth_bps: 10.0
+  # LIR smoothing span
+  lir_ema_span: 10
+  # LIR > this for LONG signal
+  lir_long_threshold: 1.5
+  # LIR < this for SHORT signal
+  lir_short_threshold: 0.66
+  
+  # ============ WALL TOUCH & REJECTION (Fade Mode) ============
+  # Price within this of wall = touch
+  touch_threshold_bps: 1.0
+  # Price must move at least this for rejection tick
+  rejection_threshold_bps: 0.5
+  # Minimum rejection ticks to confirm fade setup
+  min_rejection_ticks: 2
+  # Forget old touches after this duration
+  max_touch_duration_ms: 10000
+  
+  # ============ ENTRY FILTERS ============
+  # Block entry if spreadZ > this
+  spread_cutoff: 1.5
+  # Block entry if ATR < this (dead market)
+  atr_min_bps: 0.4
+  # Minimum buffer ticks before trading
+  warm_up_ticks: 50
+  
+  # ============ RISK PARAMETERS (DYNAMIC ATR-BASED) ============
+  # Scientific Risk Management: Target = Multiplier * Volatility (ATR)
+  # Floor values ensure strict minimum profit targets covering fees
+  
+  # FADE Mode (Mean Reversion)
+  fade_tp_mult: 3.5        # Target 3.5x Volatility
+  fade_tp_min: 15.0        # Absolute Min (net ~6bps after 9bps fees)
+  fade_sl_mult: 5.0        # Stop 5x Volatility
+  fade_sl_min: 20.0        # Absolute Min Stop
+  fade_max_hold_sec: 600   # Max Hold 10 mins
+  
+  # BREAK Mode (Momentum)
+  break_tp_mult: 7.0       # Target 7x Volatility
+  break_tp_min: 30.0       # Absolute Min (net ~21bps after fees)
+  break_sl_mult: 4.0       # Stop 4x Volatility
+  break_sl_min: 15.0       # Absolute Min Stop
+  break_max_hold_sec: 600  # Max Hold 10 mins
+
+  # Fallback Defaults (if mode unknown)
+  take_profit_bps: 8.0
+  stop_loss_bps: 10.0
+  max_hold_sec: 600
+  
+  # ============ EXECUTION ============
+  # Cooldown between trades (ms)
+  cooldown_ms: 200
+  # Maker order timeout for fade mode (seconds)
+  maker_timeout_sec: 2.0
+  # Order ACK timeout (ms)
+  ack_timeout_ms: 2000
+  
+  # ============ SIZING ============
+  # Position size in USD
+  position_size_usd: 100.0
+  
+  # ============ RISK MANAGEMENT ============
+  # Static position size
+  risk_per_trade_usd: 15.0
+  max_positions: 1
+  cooldown_ticks: 20
+  
+  # ============ STRATEGIES (v2.1) ============
+  strategies:
+    fade:
+      enabled: true
+      deviation_bps: 1.5
+      dynamic_spread_mult: 1.2
+    
+    break_strat:
+      enabled: true
+      vacuum_threshold: 0.4
+      lir_bull_threshold: 1.3
+      lir_bear_threshold: 0.7
+    
+    absorption:
+      enabled: true
+      touch_zone_bps: 1.0
+      min_bounce_ticks: 2
+    
+    vacuum_fill:
+      enabled: true
+      vacuum_threshold: 0.25
+      lir_neutral_range: [0.9, 1.1]
+    
+    churn_spike:
+      enabled: true
+      churn_mult: 2.5
+      cooldown_sec: 60
+    
+    lir_divergence:
+      enabled: true
+      lir_extreme: 1.8
+      max_deviation_bps: 2.0
+    
+    fresh_wall:
+      enabled: true
+      min_strength: 5.0
+      max_persistence: 1.0
+    
+    aggressor_momentum:
+      enabled: true
+      bias_threshold: 2.0
+      require_lir_confirm: true
+
+  # ============ BINANCE LEADER ============
+  # Use Binance orderbook as structural leader (recommended)
+  binance_enabled: true
+  # Minimum Hyper deviation from Binance wall for fade signal
+  binance_deviation_threshold_bps: 3.0
+  # Buffer from wall price for fade trigger
+  binance_wall_buffer_bps: 2.0
+
+# ============ DATA SOURCE ============
+data:
+  exchange: hyperliquid
+  symbols:
+    - ETH
+  ws_url: wss://api.hyperliquid.xyz/ws
+
+# ============ EXECUTION ============
+execution:
+  exchange: hyperliquid
+  leverage: 5
+  slippage_pct: 0.05
+
+# ============ KILL-SWITCH ============
+kill_switch:
+  cooldown_sec: 30.0
+  reconcile_interval_sec: 5.0
+  mismatch_tolerance_lots: 0.001
+
+# ============ LOGGING ============
+logging:
+  level: INFO
+  file: hyperbot_vacuum.log
+  console: true
+  debug_categories:
+    - status
+    - exec
+    - vacuum
+    - lir
